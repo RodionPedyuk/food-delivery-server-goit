@@ -1,40 +1,20 @@
-const fs = require("fs");
-const path = require("path");
+const User = require("../userSchema");
 
-const getUserById = (request, response) => {
-  const id = request.params.id;
-
-  const filePath = path.join(
-    __dirname,
-    "../../../",
-    "db/users",
-    "all-users.json"
-  );
-
-  const allUsers = JSON.parse(
-    fs.readFileSync(filePath, (err, data) => {
-      if (err) {
-        console.log(err);
-      }
-    })
-  );
-
-  const user = allUsers.filter((elem) => {
-    return elem.userid == id;
-  });
-
-  if (user.length > 0) {
-    response
-      .set("Content-Type", "aplication/json")
-      .status(200)
-      .json({ status: "success", user });
-    return;
+const getUserById = async (request, response) => {
+  try {
+    const id = request.params.id;
+    const findUser = await User.findById(id);
+    response.status(200).json({
+      status: "success",
+      user: findUser,
+    });
+  } catch (error) {
+    response.status(400).json({
+      status: "error",
+      message: error.message,
+      text: "user was not found",
+    });
   }
-  response
-    .set("Content-Type", "aplication/json")
-    .status(404)
-    .json({ status: "not found" });
-  return;
 };
 
 module.exports = getUserById;
